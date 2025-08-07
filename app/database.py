@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Column, String, DateTime, Integer, Text, E
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import UUID
+from fastapi import HTTPException
 import uuid
 from datetime import datetime
 import enum
@@ -20,12 +21,15 @@ def get_database_url():
             database_url = database_url.replace("postgres://", "postgresql://", 1)
         return database_url
     
-    # Fallback to settings
-    return settings.database_url
+    # If no DATABASE_URL is set, return None to indicate no database
+    print("⚠️  No DATABASE_URL environment variable found")
+    return None
 
 # Create engine with proper error handling
 def create_database_engine():
     database_url = get_database_url()
+    if not database_url:
+        raise Exception("No DATABASE_URL provided - cannot create database engine")
     print(f"Connecting to database: {database_url.split('@')[1] if '@' in database_url else 'localhost'}")
     return create_engine(database_url)
 
@@ -83,11 +87,21 @@ class JobFile(Base):
     completed_at = Column(DateTime, nullable=True)
 
 def get_db():
-    db = get_session_local()()
     try:
+        db = get_session_local()()
         yield db
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        # Return a mock session that will raise an error when used
+        class MockSession:
+            def __getattr__(self, name):
+                raise HTTPException(status_code=503, detail="Database not available")
+        yield MockSession()
     finally:
-        db.close()
+        try:
+            db.close()
+        except:
+            pass
 
 def create_tables():
     try:

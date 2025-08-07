@@ -25,10 +25,24 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def startup_event():
     try:
         print("🚀 Starting DOCX to PDF converter...")
-        print(f"📊 Database URL: {os.getenv('DATABASE_URL', 'Not set').split('@')[1] if '@' in os.getenv('DATABASE_URL', '') else 'localhost'}")
-        print(f"🔴 Redis URL: {os.getenv('REDIS_URL', 'Not set').split('@')[1] if '@' in os.getenv('REDIS_URL', '') else 'localhost'}")
         
-        create_tables()
+        # Check environment variables
+        database_url = os.getenv('DATABASE_URL')
+        redis_url = os.getenv('REDIS_URL')
+        
+        print(f"📊 Database URL set: {bool(database_url)}")
+        print(f"🔴 Redis URL set: {bool(redis_url)}")
+        
+        if database_url:
+            print(f"📊 Database host: {database_url.split('@')[1] if '@' in database_url else 'localhost'}")
+        if redis_url:
+            print(f"🔴 Redis host: {redis_url.split('@')[1] if '@' in redis_url else 'localhost'}")
+        
+        # Only try to create tables if we have a database URL
+        if database_url:
+            create_tables()
+        else:
+            print("⚠️  No DATABASE_URL found - skipping database initialization")
         
         # Ensure storage directories exist
         os.makedirs(settings.upload_dir, exist_ok=True)
@@ -38,8 +52,8 @@ async def startup_event():
         print("✅ Application started successfully!")
     except Exception as e:
         print(f"❌ Startup error: {e}")
-        # Don't raise the exception - let the app start but log the error
         print("⚠️  Application will start but database operations may fail")
+        # Don't raise the exception - let the app start
 
 @app.post("/api/v1/jobs", response_model=JobResponse, status_code=202)
 async def submit_job(
@@ -286,13 +300,19 @@ async def health_check():
     except Exception as e:
         db_status = f"error: {str(e)[:100]}"
     
+    # Check environment variables
+    database_url = os.getenv("DATABASE_URL")
+    redis_url = os.getenv("REDIS_URL")
+    
     return {
         "status": "healthy", 
         "timestamp": datetime.utcnow().isoformat(),
         "database": db_status,
         "environment": {
-            "database_url_set": bool(os.getenv("DATABASE_URL")),
-            "redis_url_set": bool(os.getenv("REDIS_URL"))
+            "database_url_set": bool(database_url),
+            "redis_url_set": bool(redis_url),
+            "database_url": database_url.split('@')[1] if database_url and '@' in database_url else "not_set",
+            "redis_url": redis_url.split('@')[1] if redis_url and '@' in redis_url else "not_set"
         }
     }
 
