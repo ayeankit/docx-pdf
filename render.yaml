@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: docx-pdf-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: docx-pdf-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: docx-pdf-redis
+          property: connectionString
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: 8000
+
+  - type: worker
+    name: docx-pdf-worker
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.worker worker --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: docx-pdf-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: docx-pdf-redis
+          property: connectionString
+
+databases:
+  - name: docx-pdf-db
+    databaseName: docx_converter
+    user: postgres
+
+services:
+  - type: redis
+    name: docx-pdf-redis
+    ipAllowList: [] 
