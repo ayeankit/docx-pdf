@@ -20,6 +20,10 @@ RUN mkdir -p /app/storage/uploads /app/storage/outputs /app/storage/archives
 # Set permissions
 RUN chmod -R 755 /app/storage
 
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use the startup script
+CMD ["/app/start.sh"]
