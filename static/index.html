@@ -170,11 +170,38 @@
         
         <div class="content">
             <div class="api-links">
-                <a href="/docs" class="api-link" target="_blank">📚 API Documentation</a>
+                <a href="#upload" class="api-link" onclick="showUpload()">📤 Upload Files</a>
+                <a href="#docs" class="api-link" onclick="showDocs()">📚 API Documentation</a>
                 <a href="/health" class="api-link" target="_blank">🏥 Health Check</a>
             </div>
             
-            <div class="section">
+            <!-- File Upload Section -->
+            <div id="upload-section" class="section" style="display: block;">
+                <h2>📤 Upload DOCX Files</h2>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div style="margin-bottom: 20px;">
+                        <label for="files" style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">
+                            Select DOCX files to convert:
+                        </label>
+                        <input type="file" id="files" name="files" multiple accept=".docx" 
+                               style="width: 100%; padding: 10px; border: 2px dashed #667eea; border-radius: 8px; background: #f8f9fa;">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Maximum 1000 files, 50MB each. Only DOCX files accepted.
+                        </small>
+                    </div>
+                    
+                    <button type="submit" style="background: #667eea; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                        🚀 Start Conversion
+                    </button>
+                </form>
+                
+                <div id="upload-result" style="margin-top: 20px; display: none;">
+                    <div class="success" id="success-message"></div>
+                    <div class="note" id="error-message" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div id="docs-section" class="section" style="display: none;">
                 <h2>🚀 How to Use This API</h2>
                 
                 <div class="step">
@@ -355,5 +382,84 @@ curl "http://localhost:8000/api/v1/jobs/123e4567-e89b-12d3-a456-426614174000/fil
             </div>
         </div>
     </div>
+    
+    <script>
+        function showUpload() {
+            document.getElementById('upload-section').style.display = 'block';
+            document.getElementById('docs-section').style.display = 'none';
+            document.querySelectorAll('.api-link').forEach(link => link.style.background = '#667eea');
+            event.target.style.background = '#5a67d8';
+        }
+        
+        function showDocs() {
+            document.getElementById('upload-section').style.display = 'none';
+            document.getElementById('docs-section').style.display = 'block';
+            document.querySelectorAll('.api-link').forEach(link => link.style.background = '#667eea');
+            event.target.style.background = '#5a67d8';
+        }
+        
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('files');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                showError('Please select at least one DOCX file.');
+                return;
+            }
+            
+            // Add files to form data
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Converting...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/v1/jobs', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`✅ Files uploaded successfully! Job ID: ${result.job_id}
+                    
+                    📋 Next steps:
+                    1. Check status: GET /api/v1/jobs/${result.job_id}
+                    2. List files: GET /api/v1/jobs/${result.job_id}/files
+                    3. Download PDFs: GET /api/v1/jobs/${result.job_id}/files/{filename}/download`);
+                } else {
+                    showError(`❌ Upload failed: ${result.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showError(`❌ Network error: ${error.message}`);
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        function showSuccess(message) {
+            document.getElementById('success-message').innerHTML = message.replace(/\n/g, '<br>');
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('upload-result').style.display = 'block';
+        }
+        
+        function showError(message) {
+            document.getElementById('error-message').innerHTML = message;
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+            document.getElementById('upload-result').style.display = 'block';
+        }
+    </script>
 </body>
 </html> 
