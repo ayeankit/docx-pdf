@@ -23,11 +23,23 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event("startup")
 async def startup_event():
-    create_tables()
-    # Ensure storage directories exist
-    os.makedirs(settings.upload_dir, exist_ok=True)
-    os.makedirs(settings.output_dir, exist_ok=True)
-    os.makedirs(settings.archive_dir, exist_ok=True)
+    try:
+        print("🚀 Starting DOCX to PDF converter...")
+        print(f"📊 Database URL: {os.getenv('DATABASE_URL', 'Not set').split('@')[1] if '@' in os.getenv('DATABASE_URL', '') else 'localhost'}")
+        print(f"🔴 Redis URL: {os.getenv('REDIS_URL', 'Not set').split('@')[1] if '@' in os.getenv('REDIS_URL', '') else 'localhost'}")
+        
+        create_tables()
+        
+        # Ensure storage directories exist
+        os.makedirs(settings.upload_dir, exist_ok=True)
+        os.makedirs(settings.output_dir, exist_ok=True)
+        os.makedirs(settings.archive_dir, exist_ok=True)
+        
+        print("✅ Application started successfully!")
+    except Exception as e:
+        print(f"❌ Startup error: {e}")
+        # Don't raise the exception - let the app start but log the error
+        print("⚠️  Application will start but database operations may fail")
 
 @app.post("/api/v1/jobs", response_model=JobResponse, status_code=202)
 async def submit_job(
@@ -265,7 +277,24 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+    try:
+        # Test database connection
+        db = next(get_db())
+        db.execute("SELECT 1")
+        db.close()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)[:100]}"
+    
+    return {
+        "status": "healthy", 
+        "timestamp": datetime.utcnow().isoformat(),
+        "database": db_status,
+        "environment": {
+            "database_url_set": bool(os.getenv("DATABASE_URL")),
+            "redis_url_set": bool(os.getenv("REDIS_URL"))
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn
