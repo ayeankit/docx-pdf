@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk DOCX to PDF Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .endpoint {
+            background: #4a5568;
+            color: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        
+        .method {
+            background: #38a169;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .example {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .example h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .note {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .api-links {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .api-link {
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .api-link:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Bulk DOCX to PDF Converter</h1>
+            <p>Convert multiple DOCX files to PDF with direct download capability</p>
+        </div>
+        
+        <div class="content">
+            <div class="api-links">
+                <a href="/docs" class="api-link" target="_blank">📚 API Documentation</a>
+                <a href="/health" class="api-link" target="_blank">🏥 Health Check</a>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 How to Use This API</h2>
+                
+                <div class="step">
+                    <h3>Step 1: Upload DOCX Files</h3>
+                    <div class="endpoint">
+                        <span class="method">POST</span>/api/v1/jobs
+                    </div>
+                    <p>Upload one or more DOCX files to start the conversion process.</p>
+                    
+                    <div class="example">
+                        <h4>cURL Example:</h4>
+                        <div class="code-block">
+curl -X POST "http://localhost:8000/api/v1/jobs" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "files=@document1.docx" \
+  -F "files=@document2.docx"
+                        </div>
+                    </div>
+                    
+                    <div class="success">
+                        <strong>Response:</strong> You'll get a job ID to track the conversion progress.
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <h3>Step 2: Check Job Status</h3>
+                    <div class="endpoint">
+                        <span class="method">GET</span>/api/v1/jobs/{job_id}
+                    </div>
+                    <p>Monitor the conversion progress and see when files are ready.</p>
+                    
+                    <div class="example">
+                        <h4>cURL Example:</h4>
+                        <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/YOUR_JOB_ID"
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <h3>Step 3: List Available Files</h3>
+                    <div class="endpoint">
+                        <span class="method">GET</span>/api/v1/jobs/{job_id}/files
+                    </div>
+                    <p>Get a list of all files with their download links.</p>
+                    
+                    <div class="example">
+                        <h4>cURL Example:</h4>
+                        <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/YOUR_JOB_ID/files"
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <h3>Step 4: Download Individual PDFs</h3>
+                    <div class="endpoint">
+                        <span class="method">GET</span>/api/v1/jobs/{job_id}/files/{filename}/download
+                    </div>
+                    <p>Download specific PDF files directly (not as ZIP).</p>
+                    
+                    <div class="example">
+                        <h4>cURL Example:</h4>
+                        <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/YOUR_JOB_ID/files/document1.docx/download" \
+  -o "document1.pdf"
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <h3>Step 5: Download All Files as ZIP (Alternative)</h3>
+                    <div class="endpoint">
+                        <span class="method">GET</span>/api/v1/jobs/{job_id}/download
+                    </div>
+                    <p>Download all converted files as a ZIP archive.</p>
+                    
+                    <div class="example">
+                        <h4>cURL Example:</h4>
+                        <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/YOUR_JOB_ID/download" \
+  -o "converted_files.zip"
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 Complete Workflow Example</h2>
+                
+                <div class="example">
+                    <h4>1. Upload Files:</h4>
+                    <div class="code-block">
+# Upload 2 DOCX files
+curl -X POST "http://localhost:8000/api/v1/jobs" \
+  -F "files=@report.docx" \
+  -F "files=@presentation.docx"
+
+# Response: {"job_id": "123e4567-e89b-12d3-a456-426614174000", "file_count": 2}
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <h4>2. Check Status:</h4>
+                    <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/123e4567-e89b-12d3-a456-426614174000"
+
+# Response shows job status and file progress
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <h4>3. List Files:</h4>
+                    <div class="code-block">
+curl "http://localhost:8000/api/v1/jobs/123e4567-e89b-12d3-a456-426614174000/files"
+
+# Response: List of files with download URLs
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <h4>4. Download Individual PDFs:</h4>
+                    <div class="code-block">
+# Download each PDF directly
+curl "http://localhost:8000/api/v1/jobs/123e4567-e89b-12d3-a456-426614174000/files/report.docx/download" \
+  -o "report.pdf"
+
+curl "http://localhost:8000/api/v1/jobs/123e4567-e89b-12d3-a456-426614174000/files/presentation.docx/download" \
+  -o "presentation.pdf"
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>⚙️ API Features</h2>
+                
+                <div class="success">
+                    <strong>✅ Direct PDF Downloads:</strong> Download individual PDF files without ZIP compression
+                </div>
+                
+                <div class="success">
+                    <strong>✅ Bulk Processing:</strong> Convert multiple files in a single job
+                </div>
+                
+                <div class="success">
+                    <strong>✅ Real-time Status:</strong> Monitor conversion progress
+                </div>
+                
+                <div class="success">
+                    <strong>✅ Error Handling:</strong> Detailed error messages for failed conversions
+                </div>
+                
+                <div class="success">
+                    <strong>✅ File Validation:</strong> Automatic DOCX file type and size validation
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Important Notes</h2>
+                
+                <div class="note">
+                    <strong>⚠️ File Requirements:</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Only DOCX files are accepted</li>
+                        <li>Maximum file size: 50MB per file</li>
+                        <li>Maximum files per job: 1000</li>
+                    </ul>
+                </div>
+                
+                <div class="note">
+                    <strong>⏱️ Processing Time:</strong> Conversion time depends on file size and complexity. Large files may take longer.
+                </div>
+                
+                <div class="note">
+                    <strong>🔗 Download Links:</strong> Individual PDF download links are only available after conversion is completed.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
